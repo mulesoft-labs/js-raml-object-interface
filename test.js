@@ -123,27 +123,15 @@ describe('raml object interface', function () {
     })
 
     it('should get resource types', function () {
-      expect(instance.getTypes()).to.deep.equal(['collection'])
-    })
-
-    it('should get a single resource type', function () {
-      expect(instance.getType('collection')).to.be.an('object')
+      expect(instance.getResourceTypes()).to.have.keys(['collection'])
     })
 
     it('should get traits', function () {
-      expect(instance.getTraits()).to.deep.equal(['paged'])
-    })
-
-    it('should get a single trait', function () {
-      expect(instance.getTrait('paged')).to.be.an('object')
+      expect(instance.getTraits()).to.have.keys(['paged'])
     })
 
     it('should get security schemes', function () {
-      expect(instance.getSecuritySchemes()).to.deep.equal(['oauth_2_0'])
-    })
-
-    it('should get a security scheme', function () {
-      expect(instance.getSecurityScheme('oauth_2_0')).to.be.an('object')
+      expect(instance.getSecuritySchemes()).to.have.keys(['oauth_2_0'])
     })
 
     it('should get all resource paths', function () {
@@ -205,6 +193,33 @@ describe('raml object interface', function () {
         '/api.json',
         '/api.xml'
       ])
+    })
+  })
+
+  describe('authentication', function () {
+    describe('oauth2', function () {
+      it('should expose oauth2 client', function (done) {
+        var instance = new RamlObject({
+          securitySchemes: {
+            oauth_2_0: {
+              type: 'OAuth 2.0'
+            }
+          }
+        })
+
+        var client = instance.getSecurityAuthentication('oauth_2_0')
+        var user = client.createToken('abc')
+
+        expect(user.accessToken).to.equal('abc')
+
+        instance._request = function (req) {
+          expect(req.headers.Authorization).to.equal('Bearer abc')
+
+          return done()
+        }
+
+        instance.request('/test', 'get', { user: user })
+      })
     })
   })
 })
