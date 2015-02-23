@@ -7,15 +7,19 @@
 
 An abstract interface to the [standard RAML object](https://github.com/mulesoft-labs/raml-object-standard) representation.
 
+**Please note: This module uses [Popsicle](https://github.com/blakeembrey/popsicle) to make API requests. Promises must be supported or polyfilled on all target environments.**
+
 ## Installation
 
-```sh
+```
 npm install raml-object-interface --save
 ```
 
 ## Usage
 
-
+```js
+var github = new RamlObject(githubRaml)
+```
 
 ## License
 

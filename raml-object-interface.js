@@ -1,29 +1,57 @@
 var extend = require('extend')
+var popsicle = require('popsicle')
+var ClientOAuth2 = require('client-oauth2')
 
+/**
+ * Export the RamlObject constructor.
+ *
+ * @type {Function}
+ */
 module.exports = RamlObject
 
+/**
+ * Some default raml object options for functionality.
+ *
+ * @type {Object}
+ */
 var DEFAULT_OPTIONS = {
-  format: identity,
   splitUri: /(?=\/)/
 }
 
+/**
+ * Map media types to extensions.
+ *
+ * @type {Object}
+ */
 var MEDIA_TYPE_TO_EXT = {
   'application/json': 'json',
   'text/xml': 'xml'
 }
 
+/**
+ * Pull uri parameters out of paths.
+ *
+ * @type {RegExp}
+ */
 var TEMPLATE_REGEXP = /\{[^\{\}]+\}/g
 
+/**
+ * Initialize a raml object interface.
+ *
+ * @param {Object} raml
+ * @param {Object} options
+ */
 function RamlObject (raml, options) {
   var opts = extend({}, DEFAULT_OPTIONS, options)
 
   this._title = raml.title
   this._version = raml.version
-  this._baseUri = raml.baseUri
+  this._baseUri = (raml.baseUri || '').replace(/\/$/, '')
   this._mediaType = raml.mediaType
   this._protocols = raml.protocols
   this._securitySchemes = raml.securitySchemes || {}
-  this._securedBy = sanitizeSecuredBy(raml.securedBy, this._securitySchemes)
+  this._securityAuthentication = createSecurityAuthentication(this._securitySchemes)
+  this._securedBy = sanitizeSecuredBy(raml.securedBy, raml.securitySchemes)
   this._documentation = raml.documentation
   this._resourceTypes = raml.resourceTypes || {}
   this._traits = raml.traits || {}
@@ -31,6 +59,9 @@ function RamlObject (raml, options) {
   this._baseUriParameters = createBaseUriParameters(raml)
 }
 
+/**
+ * Create getter methods for simple properties.
+ */
 [
   'title',
   'version',
@@ -48,46 +79,127 @@ function RamlObject (raml, options) {
   }
 })
 
+/**
+ * Return an array of defined resource types.
+ *
+ * @return {Array}
+ */
 RamlObject.prototype.getTypes = function () {
   return Object.keys(this._resourceTypes)
 }
 
+/**
+ * Return a single resource type.
+ *
+ * @param  {String} name
+ * @return {Object}
+ */
 RamlObject.prototype.getType = function (name) {
   return this._resourceTypes[name]
 }
 
+/**
+ * Return an array of defined traits.
+ *
+ * @return {Array}
+ */
 RamlObject.prototype.getTraits = function () {
   return Object.keys(this._traits)
 }
 
+/**
+ * Return a single trait.
+ *
+ * @param  {String} name
+ * @return {Object}
+ */
 RamlObject.prototype.getTrait = function (name) {
   return this._traits[name]
 }
 
+/**
+ * Return an array of defined security scheme names.
+ *
+ * @return {Array}
+ */
 RamlObject.prototype.getSecuritySchemes = function () {
   return Object.keys(this._securitySchemes)
 }
 
+/**
+ * Return a single security scheme.
+ *
+ * @param  {String} name
+ * @return {Object}
+ */
 RamlObject.prototype.getSecurityScheme = function (name) {
   return this._securitySchemes[name]
 }
 
+/**
+ * Return an object for supporting a given security scheme name.
+ *
+ * @param  {String} name
+ * @return {Object}
+ */
+RamlObject.prototype.getSecurityAuthentication = function (name) {
+  return this._securityAuthentication[name]
+}
+
+/**
+ * Get all defined resources as a flat array.
+ *
+ * TODO: Work out if resources without methods should be omitted.
+ *
+ * @return {Array}
+ */
 RamlObject.prototype.getResources = function () {
   return Object.keys(this._resources)
 }
 
+/**
+ * Return a resources child paths.
+ *
+ * @param  {String} path
+ * @return {Array}
+ */
+RamlObject.prototype.getResourceChildren = function (path) {
+  var resource = this._resources[path]
+
+  return resource && Object.keys(resource.children)
+}
+
+/**
+ * Return a resources supported methods.
+ *
+ * @param  {String} path
+ * @return {Array}
+ */
 RamlObject.prototype.getResourceMethods = function (path) {
   var resource = this._resources[path]
 
   return resource && Object.keys(resource.methods)
 }
 
+/**
+ * Return a resources parameters.
+ *
+ * @param  {String} path
+ * @return {Array}
+ */
 RamlObject.prototype.getResourceParameters = function (path) {
   var resource = this._resources[path]
 
   return resource && resource.absoluteUriParameters
 }
 
+/**
+ * Return a methods headers.
+ *
+ * @param  {String} path
+ * @param  {String} verb
+ * @return {Array}
+ */
 RamlObject.prototype.getMethodHeaders = function (path, verb) {
   var resource = this._resources[path]
   var method = resource && resource.methods[verb]
@@ -95,6 +207,13 @@ RamlObject.prototype.getMethodHeaders = function (path, verb) {
   return method && method.headers
 }
 
+/**
+ * Return a methods query parameters.
+ *
+ * @param  {String} path
+ * @param  {String} verb
+ * @return {Array}
+ */
 RamlObject.prototype.getMethodQueryParameters = function (path, verb) {
   var resource = this._resources[path]
   var method = resource && resource.methods[verb]
@@ -102,6 +221,13 @@ RamlObject.prototype.getMethodQueryParameters = function (path, verb) {
   return method && method.queryParameters
 }
 
+/**
+ * Return a methods supported body.
+ *
+ * @param  {String} path
+ * @param  {String} verb
+ * @return {Array}
+ */
 RamlObject.prototype.getMethodBody = function (path, verb) {
   var resource = this._resources[path]
   var method = resource && resource.methods[verb]
@@ -109,6 +235,13 @@ RamlObject.prototype.getMethodBody = function (path, verb) {
   return method && method.body
 }
 
+/**
+ * Get a methods response codes.
+ *
+ * @param  {String} path
+ * @param  {String} verb
+ * @return {Array}
+ */
 RamlObject.prototype.getMethodResponseCodes = function (path, verb) {
   var resource = this._resources[path]
   var method = resource && resource.methods[verb]
@@ -116,6 +249,14 @@ RamlObject.prototype.getMethodResponseCodes = function (path, verb) {
   return method && method.responses && Object.keys(method.responses)
 }
 
+/**
+ * Get a methods responses, given a response code.
+ *
+ * @param  {String} path
+ * @param  {String} verb
+ * @param  {Number} code
+ * @return {Array}
+ */
 RamlObject.prototype.getMethodResponse = function (path, verb, code) {
   var resource = this._resources[path]
   var method = resource && resource.methods[verb]
@@ -123,47 +264,117 @@ RamlObject.prototype.getMethodResponse = function (path, verb, code) {
   return method && method.responses && method.responses[code]
 }
 
-function identity (x) {
-  return x
+/**
+ * Make a request to an endpoint with user-defined options.
+ *
+ * @param  {String}  path
+ * @param  {String}  verb
+ * @param  {Object}  opts
+ * @return {Promise}
+ */
+RamlObject.prototype.request = function (path, verb, opts) {
+  var baseUri = this._baseUri
+  var baseUriParameters = this._baseUriParameters
+  var resourceParameters = this.getResourceParameters(path)
+
+  var url = template(baseUri, opts.baseUriParameters, baseUriParameters) +
+    template(path, opts.uriParameters, resourceParameters)
+
+  var reqOpts = {
+    url: url,
+    method: verb,
+    headers: extend({}, opts.headers),
+    query: extend({}, opts.queryParameters),
+    body: opts.body
+  }
+
+  if (opts.user && typeof opts.user.sign === 'function') {
+    opts.user.sign(reqOpts)
+  }
+
+  return popsicle(reqOpts)
 }
 
+/**
+ * Extract all parameters from a url string.
+ *
+ * @param  {String} path
+ * @param  {Object} src
+ * @return {Object}
+ */
 function parameters (path, src) {
   var dest = {}
   var params = array(path.match(TEMPLATE_REGEXP)).map(getParamName)
 
-  if (src) {
-    params.forEach(function (key) {
-      if (src[key] != null) {
-        dest[key] = src[key]
-      } else {
-        dest[key] = { type: 'string' }
-      }
-    })
-  } else {
-    params.forEach(function (key) {
+  src = src || {}
+
+  params.forEach(function (key) {
+    if (src[key] != null) {
+      dest[key] = src[key]
+    } else {
       dest[key] = { type: 'string' }
-    })
-  }
+    }
+  })
 
   return dest
 }
 
+/**
+ * Fill in a url template using an object and fallback to definition.
+ *
+ * @param  {String} path
+ * @param  {Object} src
+ * @param  {Object} def
+ * @return {String}
+ */
+function template (path, src, def) {
+  src = src || {}
+  def = def || {}
+
+  return path.replace(TEMPLATE_REGEXP, function (match) {
+    var name = getParamName(match)
+
+    if (src[name] != null) {
+      return src[name]
+    }
+
+    if (def[name] && def[name].default != null) {
+      return def[name].default
+    }
+
+    return ''
+  })
+}
+
+/**
+ * Get the param name from the template regexp.
+ *
+ * @param  {String} param
+ * @return {String}
+ */
 function getParamName (param) {
   return param.slice(1, -1)
 }
 
+/**
+ * Transform array-like properties into an array.
+ *
+ * @param  {Array} value
+ * @return {Array}
+ */
 function array (value) {
-  var arr = []
-
-  if (value != null) {
-    for (var i = 0; i < value.length; i++) {
-      arr.push(value[i])
-    }
-  }
-
-  return arr
+  return value == null ? [] : Array.prototype.slice.call(value)
 }
 
+/**
+ * Returns a structured tree from RAML resources. Adds support for applied
+ * resource types, traits and secured by, as well as references between parent
+ * and child resources and expanded parameters and path support.
+ *
+ * @param  {Object} raml
+ * @param  {Object} options
+ * @return {Object}
+ */
 function createResourceMap (raml, options) {
   var map = {}
 
@@ -263,7 +474,7 @@ function createResourceMap (raml, options) {
       }
 
       if (key === 'type' || key === 'is') {
-        return // Apply later
+        return // Apply later.
       }
 
       attachMethod(obj, key, resources[key])
@@ -279,6 +490,12 @@ function createResourceMap (raml, options) {
   return map
 }
 
+/**
+ * Generating uri parameters are similar to paths, except "version" is injected.
+ *
+ * @param  {Object} raml
+ * @return {Object}
+ */
 function createBaseUriParameters (raml) {
   var params = parameters(raml.baseUri || '', raml.baseUriParameters)
 
@@ -293,8 +510,19 @@ function createBaseUriParameters (raml) {
   return params
 }
 
+/**
+ * Sanitize a secured by array according to the security schemes.
+ *
+ * TODO: Find out if merging settings is useful.
+ *
+ * @param  {Array}  securedBy
+ * @param  {Object} securitySchemes
+ * @return {Object}
+ */
 function sanitizeSecuredBy (securedBy, securitySchemes) {
   var map = {}
+
+  securitySchemes = securitySchemes || {}
 
   if (!securedBy) {
     return map
@@ -314,10 +542,36 @@ function sanitizeSecuredBy (securedBy, securitySchemes) {
     }
 
     Object.keys(name).forEach(function (key) {
-      map[key] = extend({}, securitySchemes[key])
-      map[key].settings = extend({}, securitySchemes[key].settings, name[key])
+      var scheme = securitySchemes[key] || {}
+
+      map[key] = extend({}, scheme)
+      map[key].settings = extend({}, scheme.settings, name[key])
     })
   })
 
   return map
+}
+
+/**
+ * Create security authentication methods from the security schemes.
+ *
+ * @param  {Object} securitySchemes
+ * @return {Object}
+ */
+function createSecurityAuthentication (securitySchemes) {
+  var authentication = {}
+
+  if (!securitySchemes) {
+    return authentication
+  }
+
+  Object.keys(securitySchemes).forEach(function (key) {
+    var scheme = securitySchemes[key] || {}
+
+    if (scheme.type === 'OAuth 2.0') {
+      authentication[key] = new ClientOAuth2(scheme.settings)
+    }
+  })
+
+  return authentication
 }

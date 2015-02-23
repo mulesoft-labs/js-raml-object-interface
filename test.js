@@ -1,5 +1,9 @@
 /* global describe, it */
 
+if (!global.Promise) {
+  require('es6-promise').polyfill()
+}
+
 var expect = require('chai').expect
 var RamlObject = require('./')
 

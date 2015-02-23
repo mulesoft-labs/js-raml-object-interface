@@ -38,12 +38,15 @@
   "homepage": "https://github.com/mulesoft-labs/raml-object-standard",
   "devDependencies": {
     "chai": "^2.0.0",
+    "es6-promise": "^2.0.1",
     "istanbul": "^0.3.5",
     "mocha": "^2.1.0",
-    "pre-commit": "^1.0.1",
+    "pre-commit": "^1.0.4",
     "standard": "^2.1.1"
   },
   "dependencies": {
-    "extend": "^2.0.0"
+    "client-oauth2": "^0.2.3",
+    "extend": "^2.0.0",
+    "popsicle": "^0.3.10"
   }
 }
