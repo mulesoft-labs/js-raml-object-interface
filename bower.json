@@ -1,0 +1,25 @@
+{
+  "name": "raml-object-interface",
+  "version": "0.0.0",
+  "homepage": "https://github.com/mulesoft-labs/raml-object-interface",
+  "main": "raml-object-interface.js",
+  "authors": [
+    "MuleSoft, Inc."
+  ],
+  "description": "An abstract interface to a standard RAML object representation",
+  "keywords": [
+    "raml",
+    "object",
+    "json",
+    "standard",
+    "interface"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

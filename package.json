@@ -1,0 +1,49 @@
+{
+  "name": "raml-object-interface",
+  "version": "0.0.0",
+  "description": "An abstract interface to a standard RAML object representation",
+  "main": "raml-object-interface.js",
+  "files": [
+    "raml-object-interface.js"
+  ],
+  "scripts": {
+    "lint": "standard",
+    "test-std": "mocha -R spec --bail",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- -R spec --bail",
+    "test": "npm run lint && npm run test-cov"
+  },
+  "standard": {
+    "ignore": [
+      "coverage/**",
+      "node_modules/**",
+      "bower_components/**"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mulesoft-labs/raml-object-standard.git"
+  },
+  "keywords": [
+    "raml",
+    "object",
+    "json",
+    "standard",
+    "interface"
+  ],
+  "author": "MuleSoft, Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/mulesoft-labs/raml-object-standard/issues"
+  },
+  "homepage": "https://github.com/mulesoft-labs/raml-object-standard",
+  "devDependencies": {
+    "chai": "^2.0.0",
+    "istanbul": "^0.3.5",
+    "mocha": "^2.1.0",
+    "pre-commit": "^1.0.1",
+    "standard": "^2.1.1"
+  },
+  "dependencies": {
+    "extend": "^2.0.0"
+  }
+}
