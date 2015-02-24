@@ -142,8 +142,10 @@ describe('raml object interface', function () {
       ])
     })
 
-    it.skip('should get a resources methods', function () {
-      expect(instance.getResourceMethods('/users')).to.deep.equal(['get'])
+    it('should get a resources methods', function () {
+      expect(instance.getResourceMethods('/users/{userId}')).to.deep.equal([
+        'get'
+      ])
     })
 
     it('should get resource uri parameters', function () {
@@ -158,6 +160,20 @@ describe('raml object interface', function () {
       var query = instance.getMethodQueryParameters('/users/{userId}', 'get')
 
       expect(query).to.be.an('object').and.have.keys(['full'])
+    })
+
+    it('should get headers', function () {
+      expect(instance.getMethodHeaders('/users')).to.be.undefined
+    })
+
+    it('should get resource child uris', function () {
+      expect(instance.getResourceChildren('/users')).to.deep.equal([
+        '/users/{userId}'
+      ])
+    })
+
+    it('should get relative uris', function () {
+      expect(instance.getRelativeUri('/users/{userId}')).to.equal('/{userId}')
     })
   })
 
