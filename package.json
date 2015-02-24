@@ -1,6 +1,6 @@
 {
   "name": "raml-object-interface",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An abstract interface to a standard RAML object representation",
   "main": "raml-object-interface.js",
   "files": [
