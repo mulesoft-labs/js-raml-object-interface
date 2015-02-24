@@ -120,6 +120,18 @@ RamlObject.prototype.getResourceChildren = function (path) {
 }
 
 /**
+ * Return the relative uri of a path.
+ *
+ * @param  {String} path
+ * @return {String}
+ */
+RamlObject.prototype.getRelativeUri = function (path) {
+  var resource = this._resources[path]
+
+  return resource && resource.relativeUri
+}
+
+/**
  * Return a resources supported methods.
  *
  * @param  {String} path
