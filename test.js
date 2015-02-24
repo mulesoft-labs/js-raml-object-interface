@@ -175,6 +175,18 @@ describe('raml object interface', function () {
     it('should get relative uris', function () {
       expect(instance.getRelativeUri('/users/{userId}')).to.equal('/{userId}')
     })
+
+    it('should get parent paths', function () {
+      expect(instance.getResourceParent('/users/{userId}')).to.equal('/users')
+    })
+
+    it('should get relative uri parameters', function () {
+      expect(instance.getRelativeParameters('/users/{userId}')).to.deep.equal({
+        userId: {
+          type: 'string'
+        }
+      })
+    })
   })
 
   describe('media type extension', function () {

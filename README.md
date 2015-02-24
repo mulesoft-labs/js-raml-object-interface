@@ -137,6 +137,30 @@ Return an array of valid child resources.
 gitHub.getResourceChildren('/') //=> ["/users", ...]
 ```
 
+### getResourceParent(path)
+
+Return the path of the parent.
+
+```js
+gitHub.getResourceParent('/users/{userId}') //=> "/users"
+```
+
+### getRelativeUri(path)
+
+Return the relative path to its parent.
+
+```js
+gitHub.getRelativeUri('/users/{userId}') //=> "/{userId}"
+```
+
+### getRelativeParameters(path)
+
+Return a map of [named parameters](https://github.com/raml-org/raml-spec/blob/master/raml-0.8.md#named-parameters) used on the relative part of the resource.
+
+```js
+gitHub.getRelativeParameters('/users/{userId}') //=> { "userId": { ...} }
+```
+
 ### getResourceMethods(path)
 
 Return an array of support methods of a resource.

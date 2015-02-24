@@ -120,6 +120,18 @@ RamlObject.prototype.getResourceChildren = function (path) {
 }
 
 /**
+ * Return the resources parent path.
+ *
+ * @param  {String} path
+ * @return {String}
+ */
+RamlObject.prototype.getResourceParent = function (path) {
+  var resource = this._resources[path]
+
+  return resource && resource.parent && resource.parent.absoluteUri
+}
+
+/**
  * Return the relative uri of a path.
  *
  * @param  {String} path
@@ -147,7 +159,7 @@ RamlObject.prototype.getResourceMethods = function (path) {
  * Return a resources parameters.
  *
  * @param  {String} path
- * @return {Array}
+ * @return {Object}
  */
 RamlObject.prototype.getResourceParameters = function (path) {
   var resource = this._resources[path]
@@ -156,11 +168,23 @@ RamlObject.prototype.getResourceParameters = function (path) {
 }
 
 /**
+ * Return the relative parameters.
+ *
+ * @param  {String} path
+ * @return {Object}
+ */
+RamlObject.prototype.getRelativeParameters = function (path) {
+  var resource = this._resources[path]
+
+  return resource && resource.relativeUriParameters
+}
+
+/**
  * Return a methods headers.
  *
  * @param  {String} path
  * @param  {String} verb
- * @return {Array}
+ * @return {Object}
  */
 RamlObject.prototype.getMethodHeaders = function (path, verb) {
   var resource = this._resources[path]
@@ -174,7 +198,7 @@ RamlObject.prototype.getMethodHeaders = function (path, verb) {
  *
  * @param  {String} path
  * @param  {String} verb
- * @return {Array}
+ * @return {Object}
  */
 RamlObject.prototype.getMethodQueryParameters = function (path, verb) {
   var resource = this._resources[path]
@@ -188,7 +212,7 @@ RamlObject.prototype.getMethodQueryParameters = function (path, verb) {
  *
  * @param  {String} path
  * @param  {String} verb
- * @return {Array}
+ * @return {Object}
  */
 RamlObject.prototype.getMethodBody = function (path, verb) {
   var resource = this._resources[path]
@@ -202,7 +226,7 @@ RamlObject.prototype.getMethodBody = function (path, verb) {
  *
  * @param  {String} path
  * @param  {String} verb
- * @return {Array}
+ * @return {Object}
  */
 RamlObject.prototype.getMethodResponses = function (path, verb) {
   var resource = this._resources[path]
