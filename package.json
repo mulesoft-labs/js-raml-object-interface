@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mulesoft-labs/raml-object-standard.git"
+    "url": "git://github.com/mulesoft-labs/js-raml-object-interface.git"
   },
   "keywords": [
     "raml",
@@ -33,9 +33,9 @@
   "author": "MuleSoft, Inc.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/mulesoft-labs/raml-object-standard/issues"
+    "url": "https://github.com/mulesoft-labs/js-raml-object-interface/issues"
   },
-  "homepage": "https://github.com/mulesoft-labs/raml-object-standard",
+  "homepage": "https://github.com/mulesoft-labs/js-raml-object-interface",
   "devDependencies": {
     "chai": "^2.0.0",
     "es6-promise": "^2.0.1",
