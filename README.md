@@ -7,8 +7,6 @@
 
 An abstract interface to the [standard RAML object](https://github.com/mulesoft-labs/raml-object-standard) representation.
 
-**Please note: This module uses [Popsicle](https://github.com/blakeembrey/popsicle) to make API requests. Promises must be supported or polyfilled on all target environments.**
-
 ## Installation
 
 ```
@@ -204,15 +202,6 @@ Return an map of [possible responses](https://github.com/raml-org/raml-spec/blob
 ```js
 gitHub.getMethodResponses('/users', 'get') //=> { "200": { "body": { "application/json": { ... } } } }
 ```
-
-**Supported Options:**
-
-* `baseUriParameters` (object) Map of values to use in the base uri string.
-* `uriParameters` (object) Map of values to use in the path.
-* `headers` (object) Map of values to set as request headers.
-* `queryParameters` (object) Map of values to append as the query string.
-* `body` (object|string) The body of the request to be sent.
-* `user` (object) A user instance provided by an authentication flow (must expose a `sign` method).
 
 ## License
 
