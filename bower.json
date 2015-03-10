@@ -1,6 +1,6 @@
 {
   "name": "raml-object-interface",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/mulesoft-labs/raml-object-interface",
   "main": "raml-object-interface.js",
   "authors": [
