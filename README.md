@@ -145,6 +145,14 @@ Return the path of the parent.
 gitHub.getResourceParent('/users/{userId}') //=> "/users"
 ```
 
+### getResourceName(path)
+
+Return a resource name, useful for client generators.
+
+```js
+gitHub.getResourceName('/users/{userId}') //=> "userId"
+```
+
 ### getRelativeUri(path)
 
 Return the relative path to its parent.

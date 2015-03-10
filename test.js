@@ -187,6 +187,11 @@ describe('raml object interface', function () {
         }
       })
     })
+
+    it('should extract resource names', function () {
+      expect(instance.getResourceName('/users')).to.equal('users')
+      expect(instance.getResourceName('/users/{userId}')).to.equal('userId')
+    })
   })
 
   describe('media type extension', function () {

@@ -95,8 +95,6 @@ RamlObject.prototype.getSecurityAuthentication = function (name) {
 /**
  * Get all defined resources as a flat array.
  *
- * TODO: Work out if resources without methods should be omitted.
- *
  * @return {Array}
  */
 RamlObject.prototype.getResources = function () {
@@ -153,6 +151,18 @@ RamlObject.prototype.getResourceMethods = function (path) {
   var resource = this._resources[path]
 
   return resource && Object.keys(resource.methods)
+}
+
+/**
+ * Extract a resource name from a resource.
+ *
+ * @param  {String} path
+ * @return {String}
+ */
+RamlObject.prototype.getResourceName = function (path) {
+  var resource = this._resources[path]
+
+  return resource && toResourceName(resource.relativeUri)
 }
 
 /**
@@ -554,4 +564,22 @@ function createSecurityAuthentication (securitySchemes) {
   })
 
   return authentication
+}
+
+/**
+ * Extract the resource name.
+ *
+ * @param  {String} path
+ * @return {String}
+ */
+function toResourceName (path) {
+  var name = path.replace(/^[\.\/]/, '')
+
+  // Handle a single parameter. E.g. "/{param}".
+  if (/^\{[^\{\}]+\}$/.test(name)) {
+    return name.slice(1, -1)
+  }
+
+  // Handle static text with trailing parameters. E.g. "/string{id}".
+  return name.replace(/\{.+\}$/, '')
 }
