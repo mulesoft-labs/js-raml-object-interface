@@ -228,31 +228,4 @@ describe('raml object interface', function () {
       ])
     })
   })
-
-  describe('authentication', function () {
-    describe('oauth2', function () {
-      it('should expose oauth2 client', function (done) {
-        var instance = new RamlObject({
-          securitySchemes: {
-            oauth_2_0: {
-              type: 'OAuth 2.0'
-            }
-          }
-        })
-
-        var client = instance.getSecurityAuthentication('oauth_2_0')
-        var user = client.createToken('abc')
-
-        expect(user.accessToken).to.equal('abc')
-
-        instance._request = function (req) {
-          expect(req.headers.Authorization).to.equal('Bearer abc')
-
-          return done()
-        }
-
-        instance.request('/test', 'get', { user: user })
-      })
-    })
-  })
 })

@@ -1,6 +1,4 @@
-var extend = require('extend')
-var popsicle = require('popsicle')
-var ClientOAuth2 = require('client-oauth2')
+var xtend = require('xtend')
 
 /**
  * Export the RamlObject constructor.
@@ -42,7 +40,7 @@ var TEMPLATE_REGEXP = /\{[^\{\}]+\}/g
  * @param {Object} options
  */
 function RamlObject (raml, options) {
-  var opts = extend({}, DEFAULT_OPTIONS, options)
+  var opts = xtend(DEFAULT_OPTIONS, options)
 
   this._title = raml.title
   this._version = raml.version
@@ -50,7 +48,6 @@ function RamlObject (raml, options) {
   this._mediaType = raml.mediaType
   this._protocols = raml.protocols
   this._securitySchemes = raml.securitySchemes || {}
-  this._securityAuthentication = createSecurityAuthentication(this._securitySchemes)
   this._securedBy = sanitizeSecuredBy(raml.securedBy, raml.securitySchemes)
   this._documentation = array(raml.documentation)
   this._resourceTypes = raml.resourceTypes || {}
@@ -81,16 +78,6 @@ function RamlObject (raml, options) {
     return this['_' + prop]
   }
 })
-
-/**
- * Return an object for supporting a given security scheme name.
- *
- * @param  {String} name
- * @return {Object}
- */
-RamlObject.prototype.getSecurityAuthentication = function (name) {
-  return this._securityAuthentication[name]
-}
 
 /**
  * Get all defined resources as a flat array.
@@ -246,46 +233,6 @@ RamlObject.prototype.getMethodResponses = function (path, verb) {
 }
 
 /**
- * Make a request to an endpoint with user-defined options.
- *
- * @param  {String}  path
- * @param  {String}  verb
- * @param  {Object}  opts
- * @return {Promise}
- */
-RamlObject.prototype.request = function (path, verb, opts) {
-  opts = opts || {}
-
-  var baseUri = this._baseUri
-  var baseUriParameters = this._baseUriParameters
-  var resourceParameters = this.getResourceParameters(path)
-
-  var url = template(baseUri, opts.baseUriParameters, baseUriParameters) +
-    template(path, opts.uriParameters, resourceParameters)
-
-  var reqOpts = {
-    url: url,
-    method: verb,
-    headers: extend({}, opts.headers),
-    query: extend({}, opts.queryParameters),
-    body: opts.body
-  }
-
-  if (opts.user && typeof opts.user.sign === 'function') {
-    opts.user.sign(reqOpts)
-  }
-
-  return this._request(reqOpts)
-}
-
-/**
- * Override the request function.
- *
- * @type {Function}
- */
-RamlObject.prototype._request = popsicle
-
-/**
  * Extract all parameters from a url string.
  *
  * @param  {String} path
@@ -425,7 +372,7 @@ function createResourceMap (raml, options) {
           relativeUri: part,
           absoluteUri: absoluteUri,
           relativeUriParameters: uriParams,
-          absoluteUriParameters: extend({}, obj.absoluteUriParameters, uriParams)
+          absoluteUriParameters: xtend(obj.absoluteUriParameters, uriParams)
         }
       }
     }
@@ -448,7 +395,7 @@ function createResourceMap (raml, options) {
   function attachMethod (obj, name, method) {
     var securedBy = (method && method.securedBy) || raml.securedBy
 
-    obj.methods[name] = extend({
+    obj.methods[name] = xtend({
       parent: obj
     }, method, {
       securedBy: sanitizeSecuredBy(securedBy, raml.securitySchemes)
@@ -491,7 +438,7 @@ function createBaseUriParameters (raml) {
 
   // Extend a default value.
   if (params.version) {
-    params.version = extend({
+    params.version = xtend({
       type: 'string',
       default: raml.version
     }, params.version)
@@ -534,36 +481,12 @@ function sanitizeSecuredBy (securedBy, securitySchemes) {
     Object.keys(name).forEach(function (key) {
       var scheme = securitySchemes[key] || {}
 
-      map[key] = extend({}, scheme)
-      map[key].settings = extend({}, scheme.settings, name[key])
+      map[key] = xtend(scheme)
+      map[key].settings = xtend(scheme.settings, name[key])
     })
   })
 
   return map
-}
-
-/**
- * Create security authentication methods from the security schemes.
- *
- * @param  {Object} securitySchemes
- * @return {Object}
- */
-function createSecurityAuthentication (securitySchemes) {
-  var authentication = {}
-
-  if (!securitySchemes) {
-    return authentication
-  }
-
-  Object.keys(securitySchemes).forEach(function (key) {
-    var scheme = securitySchemes[key] || {}
-
-    if (scheme.type === 'OAuth 2.0') {
-      authentication[key] = new ClientOAuth2(scheme.settings)
-    }
-  })
-
-  return authentication
 }
 
 /**

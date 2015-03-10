@@ -109,18 +109,6 @@ Return a map of [security scheme objects](https://github.com/raml-org/raml-spec/
 gitHub.getSecuritySchemes() //=> { "oauth_2_0": { "type": "OAuth 2.0", ... } }
 ```
 
-### getSecurityAuthentication()
-
-Return an authentication instance for a security scheme.
-
-```js
-gitHub.getSecurityAuthentication('oauth_2_0') //=> instanceof ClientOAuth2 === true
-```
-
-**Supported Authentication Types:**
-
-* [OAuth 2.0](https://github.com/mulesoft/js-client-oauth2)
-
 ### getResources()
 
 Return an array of all resource strings.
@@ -215,22 +203,6 @@ Return an map of [possible responses](https://github.com/raml-org/raml-spec/blob
 
 ```js
 gitHub.getMethodResponses('/users', 'get') //=> { "200": { "body": { "application/json": { ... } } } }
-```
-
-### request(path, method, options)
-
-Trigger an API request that returns a promise of a [response object](https://github.com/blakeembrey/popsicle#response-objects).
-
-```js
-gitHub.request('/users', 'get', {
-  body: '...',
-  headers: {
-    'X-Example': 'ABC'
-  },
-  queryParameters: {
-    since: 123
-  }
-}) //=> { then: [Function] }
 ```
 
 **Supported Options:**

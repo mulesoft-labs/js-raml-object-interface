@@ -45,8 +45,6 @@
     "standard": "^2.1.1"
   },
   "dependencies": {
-    "client-oauth2": "^0.2.3",
-    "extend": "^2.0.0",
-    "popsicle": "^0.3.10"
+    "xtend": "^4.0.0"
   }
 }
