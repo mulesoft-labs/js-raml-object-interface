@@ -257,33 +257,6 @@ function parameters (path, src) {
 }
 
 /**
- * Fill in a url template using an object and fallback to definition.
- *
- * @param  {String} path
- * @param  {Object} src
- * @param  {Object} def
- * @return {String}
- */
-function template (path, src, def) {
-  src = src || {}
-  def = def || {}
-
-  return path.replace(TEMPLATE_REGEXP, function (match) {
-    var name = getParamName(match)
-
-    if (src[name] != null) {
-      return src[name]
-    }
-
-    if (def[name] && def[name].default != null) {
-      return def[name].default
-    }
-
-    return ''
-  })
-}
-
-/**
  * Get the param name from the template regexp.
  *
  * @param  {String} param
